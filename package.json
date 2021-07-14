@@ -1,0 +1,37 @@
+{
+  "name": "easy-urls",
+  "description": "Manage your urls easily",
+  "version": "0.0.1",
+  "license": "MIT",
+  "author": "Kacper Dziub",
+  "main": "./lib/index.js",
+  "modules": "./lib/index.js",
+  "files": [
+    "lib/"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dkacper/easy-urls.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dkacper/easy-urls/issues"
+  },
+  "homepage": "https://github.com/dkacper/easy-urls#readme",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.28.3",
+    "@typescript-eslint/parser": "^4.28.3",
+    "eslint": "^7.30.0",
+    "eslint-config-prettier": "^8.3.0",
+    "prettier": "^2.3.2",
+    "typescript": "^4.3.5"
+  },
+  "dependencies": {
+    "@types/route-parser": "^0.1.3",
+    "query-string": "^7.0.1",
+    "route-parser": "0.0.5"
+  }
+}
