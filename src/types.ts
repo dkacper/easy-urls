@@ -1,8 +1,8 @@
 import { IStringifyOptions } from 'qs';
 
-export type URLParams = Record<string, string | number | undefined>;
-
-export type URLQuery = {
+export type NoParams = undefined;
+export type RouteParams = Record<string, string | number | undefined>;
+export type RouteQuery = {
   [key: string]:
     | undefined
     | boolean
@@ -11,41 +11,43 @@ export type URLQuery = {
     | string[]
     | number
     | number[]
-    | URLQuery
-    | URLQuery[];
+    | RouteQuery
+    | RouteQuery[];
 };
 
-export interface URLOptions {
+export interface RouteOptions {
   qs?: IStringifyOptions;
 }
 
-interface URLSegmentsRequired<TParams extends URLParams | null> {
-  params: TParams;
-}
-
-interface URLSegmentsOptional {
-  query?: URLQuery;
+export interface RouteSegmentsOptional {
+  params?: NoParams;
+  query?: RouteQuery;
   fragment?: string;
   base?: string;
 }
 
-interface URLSegments<TParams extends URLParams | null>
-  extends URLSegmentsOptional,
-    URLSegmentsRequired<TParams> {}
+export interface RouteSegments<TParams extends RouteParams | NoParams> {
+  params: TParams;
+  query?: RouteQuery;
+  fragment?: string;
+  base?: string;
+}
 
-export type URLSegmentsArgs<TParams extends URLParams | null> =
-  TParams extends URLParams ? URLSegments<TParams> : URLSegmentsOptional;
+export type RouteComposeArgs<TParams extends RouteParams | NoParams> =
+  TParams extends RouteParams
+    ? [segments: RouteSegments<TParams>, options?: RouteOptions]
+    : [segments?: RouteSegmentsOptional, options?: RouteOptions];
 
-export type RouteComposeArgs<TParams extends URLParams | null> =
-  TParams extends URLParams
-    ? [segments: URLSegmentsArgs<TParams>, options?: URLOptions]
-    : [segments?: URLSegmentsArgs<null>, options?: URLOptions];
+export interface IRoute<TParams extends RouteParams | NoParams> {
+  compose(...args: RouteComposeArgs<TParams>): string;
+  match(path: string): TParams | false;
+}
 
-export type ExtractParam<Pattern extends string> =
+export type ExtractParams<Pattern extends string> =
   Pattern extends `${infer Head}/${infer Tail}`
     ? Head extends `:${infer Param}`
-      ? [Param, ...ExtractParam<Tail>]
-      : ExtractParam<Tail>
+      ? [Param, ...ExtractParams<Tail>]
+      : ExtractParams<Tail>
     : Pattern extends `:${infer LastParam}`
     ? [LastParam]
     : [];

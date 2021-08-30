@@ -2,44 +2,36 @@ import { compile, match, MatchFunction, PathFunction } from 'path-to-regexp';
 
 import { resolveBase, resolveFragment, resolveQuery } from './resolvers';
 import {
-  ExtractParam,
+  IRoute,
+  NoParams,
+  RouteParams,
   RouteComposeArgs,
-  URLParams,
-  URLSegmentsArgs,
+  ExtractParams,
 } from './types';
-
-function isParamSegment<TParams extends URLParams>(
-  item: unknown,
-): item is URLSegmentsArgs<TParams> {
-  return (
-    typeof item === 'object' &&
-    item !== null &&
-    Object.prototype.hasOwnProperty.call(item, 'params')
-  );
-}
 
 class Route<
   TPattern extends string,
-  TParams extends URLParams | null = ExtractParam<TPattern> extends []
-    ? null
-    : Record<ExtractParam<TPattern>[number], string>,
-> {
+  TParams extends RouteParams | NoParams = ExtractParams<TPattern> extends []
+    ? NoParams
+    : Record<ExtractParams<TPattern>[number], string>,
+> implements IRoute<TParams>
+{
   readonly pattern: TPattern;
-  private _pathResolver: PathFunction;
-  private _matcher: MatchFunction<TParams extends URLParams ? TParams : never>;
+  private _resolvePath: PathFunction;
+  private _match: MatchFunction<TParams extends RouteParams ? TParams : never>;
 
   constructor(pattern: TPattern) {
     this.pattern = pattern;
-    this._pathResolver = compile(pattern);
-    this._matcher = match(pattern);
+    this._resolvePath = compile(pattern);
+    this._match = match(pattern);
   }
 
   public compose(...args: RouteComposeArgs<TParams>): string {
     const [segments, options] = args;
     let url: string = this.pattern;
 
-    if (isParamSegment(segments)) {
-      url = this._pathResolver(segments?.params);
+    if (segments?.params) {
+      url = this._resolvePath(segments?.params);
     }
     url = resolveQuery(url, segments?.query, options?.qs);
     url = resolveFragment(url, segments?.fragment);
@@ -49,7 +41,7 @@ class Route<
   }
 
   public match(path: string): TParams | false {
-    const matched = this._matcher(path);
+    const matched = this._match(path);
     return matched ? matched.params : false;
   }
 }
