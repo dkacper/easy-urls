@@ -1,6 +1,6 @@
 import { IStringifyOptions } from 'qs';
 
-export type NoParams = undefined;
+export type NoParams = [never];
 export type RouteParams = Record<string, string | number | undefined>;
 export type RouteQuery = {
   [key: string]:
@@ -33,10 +33,12 @@ export interface RouteSegments<TParams extends RouteParams | NoParams> {
   base?: string;
 }
 
-export type RouteComposeArgs<TParams extends RouteParams | NoParams> =
-  TParams extends RouteParams
-    ? [segments: RouteSegments<TParams>, options?: RouteOptions]
-    : [segments?: RouteSegmentsOptional, options?: RouteOptions];
+export type RouteComposeArgs<
+  TParams extends RouteParams | NoParams,
+  T extends RouteParams | NoParams = TParams,
+> = TParams extends RouteParams
+  ? [segments: RouteSegments<T>, options?: RouteOptions]
+  : [segments?: RouteSegmentsOptional, options?: RouteOptions];
 
 export interface IRoute<TParams extends RouteParams | NoParams> {
   compose(...args: RouteComposeArgs<TParams>): string;

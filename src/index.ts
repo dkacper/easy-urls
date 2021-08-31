@@ -1,4 +1,11 @@
-import { compile, match, MatchFunction, PathFunction } from 'path-to-regexp';
+import {
+  compile,
+  Key,
+  match,
+  MatchFunction,
+  PathFunction,
+  pathToRegexp,
+} from 'path-to-regexp';
 
 import { resolveBase, resolveFragment, resolveQuery } from './resolvers';
 import {
@@ -17,20 +24,24 @@ class Route<
 > implements IRoute<TParams>
 {
   readonly pattern: TPattern;
-  private _resolvePath: PathFunction;
-  private _match: MatchFunction<TParams extends RouteParams ? TParams : never>;
+  readonly regexp: RegExp;
+  private _keys: Key[];
+  private _resolvePath: PathFunction<TParams>;
+  private _match: MatchFunction<TParams>;
 
   constructor(pattern: TPattern) {
     this.pattern = pattern;
     this._resolvePath = compile(pattern);
     this._match = match(pattern);
+    this._keys = [];
+    this.regexp = pathToRegexp(this.pattern, this._keys);
   }
 
   public compose(...args: RouteComposeArgs<TParams>): string {
     const [segments, options] = args;
     let url: string = this.pattern;
 
-    if (segments?.params) {
+    if (segments?.params && !Array.isArray(segments?.params)) {
       url = this._resolvePath(segments?.params);
     }
     url = resolveQuery(url, segments?.query, options?.qs);
@@ -41,8 +52,11 @@ class Route<
   }
 
   public match(path: string): TParams | false {
-    const matched = this._match(path);
-    return matched ? matched.params : false;
+    if (this._keys.length) {
+      const matched = this._match(path);
+      return matched ? matched.params : false;
+    }
+    return false;
   }
 }
 
