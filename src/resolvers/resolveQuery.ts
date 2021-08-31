@@ -1,8 +1,8 @@
 import { stringify, IStringifyOptions } from 'qs';
 
-import { URLQuery } from '../types';
+import { RouteQuery } from '../types';
 
-function resolveQuery<TQuery extends URLQuery>(
+function resolveQuery<TQuery extends RouteQuery>(
   url: string,
   query?: TQuery,
   options?: IStringifyOptions,
