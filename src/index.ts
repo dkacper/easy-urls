@@ -6,15 +6,24 @@ import {
   PathFunction,
   pathToRegexp,
 } from 'path-to-regexp';
+import { IStringifyOptions, stringify } from 'qs';
 
-import { resolveBase, resolveFragment, resolveQuery } from './resolvers';
 import {
   IRoute,
   NoParams,
   RouteParams,
   RouteComposeArgs,
   ExtractParams,
+  RouteQuery,
 } from './types';
+
+function stripTrailingSlash(path: string) {
+  const trailingSlashIndex = path.search(/\/$/);
+  if (trailingSlashIndex > -1) {
+    return path.substring(0, trailingSlashIndex);
+  }
+  return path;
+}
 
 class Route<
   TPattern extends string,
@@ -44,9 +53,9 @@ class Route<
     if (segments?.params && !Array.isArray(segments?.params)) {
       url = this._resolvePath(segments?.params);
     }
-    url = resolveQuery(url, segments?.query, options?.qs);
-    url = resolveFragment(url, segments?.fragment);
-    url = resolveBase(url, segments?.base);
+    url = Route.resolveQuery(url, segments?.query, options?.qs);
+    url = Route.resolveFragment(url, segments?.fragment);
+    url = Route.resolveBase(url, segments?.base);
 
     return url;
   }
@@ -57,6 +66,32 @@ class Route<
       return matched ? matched.params : false;
     }
     return false;
+  }
+
+  public static resolveBase(url: string, base?: string): string {
+    if (!base) {
+      return url;
+    }
+    return `${stripTrailingSlash(base)}${url}`;
+  }
+
+  public static resolveFragment(url: string, fragment?: string): string {
+    if (!fragment) {
+      return url;
+    }
+    return `${url}#${fragment}`;
+  }
+
+  public static resolveQuery<TQuery extends RouteQuery>(
+    url: string,
+    query?: TQuery,
+    options?: IStringifyOptions,
+  ): string {
+    if (!query) {
+      return url;
+    }
+    const qsOptions = { addQueryPrefix: true, ...options };
+    return `${url}${stringify(query, qsOptions)}`;
   }
 }
 
