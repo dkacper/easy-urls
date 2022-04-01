@@ -1,6 +1,6 @@
 {
   "name": "easy-urls",
-  "description": "Manage your urls easily",
+  "description": "Easy and typesafe URL handling",
   "version": "0.0.1",
   "license": "MIT",
   "author": "Kacper Dziub",

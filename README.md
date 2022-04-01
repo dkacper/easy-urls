@@ -1,6 +1,6 @@
 # Easy URLs
 
-Easy typesafe URL handling. TypeScript focused lib for composing and matching URLs. Built on top of [path-to-regexp](https://github.com/pillarjs/path-to-regexp) and [qs](https://github.com/ljharb/qs).
+Easy and typesafe URL handling. TypeScript focused lib for composing and matching URLs. Built on top of [path-to-regexp](https://github.com/pillarjs/path-to-regexp) and [qs](https://github.com/ljharb/qs).
 
 ## `compose`
 
