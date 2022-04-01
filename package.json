@@ -6,6 +6,7 @@
   "author": "Kacper Dziub",
   "main": "./lib/index.js",
   "modules": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "files": [
     "lib/"
   ],

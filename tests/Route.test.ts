@@ -1,4 +1,4 @@
-import Route from '..';
+import Route from '../src';
 
 test('Should compose URL with no params using pattern', () => {
   const pattern = '/example/test/path';
