@@ -1,7 +1,10 @@
 import { IStringifyOptions } from 'qs';
 
+export type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};
+
 export type NoParams = [never];
-export type RouteParams = Record<string, string | number | undefined>;
 export type RouteQuery = {
   [key: string]:
     | undefined
@@ -19,29 +22,25 @@ export interface RouteOptions {
   qs?: IStringifyOptions;
 }
 
-export interface RouteSegmentsOptional {
-  params?: NoParams;
-  query?: RouteQuery;
-  fragment?: string;
-  base?: string;
-}
+export type ComposeSegments<TParams extends object | NoParams> =
+  TParams extends NoParams
+    ? {
+        params?: TParams;
+        query?: RouteQuery;
+        fragment?: string;
+        base?: string;
+        options?: RouteOptions;
+      }
+    : {
+        params: TParams;
+        query?: RouteQuery;
+        fragment?: string;
+        base?: string;
+        options?: RouteOptions;
+      };
 
-export interface RouteSegments<TParams extends RouteParams | NoParams> {
-  params: TParams;
-  query?: RouteQuery;
-  fragment?: string;
-  base?: string;
-}
-
-export type RouteComposeArgs<
-  TParams extends RouteParams | NoParams,
-  T extends RouteParams | NoParams = TParams,
-> = TParams extends RouteParams
-  ? [segments: RouteSegments<T>, options?: RouteOptions]
-  : [segments?: RouteSegmentsOptional, options?: RouteOptions];
-
-export interface IRoute<TParams extends RouteParams | NoParams> {
-  compose(...args: RouteComposeArgs<TParams>): string;
+export interface IRoute<TParams extends object | NoParams> {
+  compose(segments: ComposeSegments<TParams>): string;
   match(path: string): TParams | false;
 }
 
@@ -53,3 +52,14 @@ export type ExtractParams<Pattern extends string> =
     : Pattern extends `:${infer LastParam}`
     ? [LastParam]
     : [];
+
+export type RouteParams<TParams extends unknown[]> = TParams extends [
+  infer Param,
+  ...infer RestParams,
+]
+  ? Param extends `${infer OptionalParam}?`
+    ? { [key in OptionalParam]?: string | number } & RouteParams<RestParams>
+    : Param extends string
+    ? { [key in Param]: string | number } & RouteParams<RestParams>
+    : never
+  : {};
