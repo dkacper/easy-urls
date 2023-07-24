@@ -12,9 +12,10 @@ import {
   IRoute,
   NoParams,
   RouteParams,
-  RouteComposeArgs,
   ExtractParams,
   RouteQuery,
+  Prettify,
+  ComposeSegments,
 } from './types';
 
 function stripTrailingSlash(path: string) {
@@ -27,9 +28,9 @@ function stripTrailingSlash(path: string) {
 
 class Route<
   TPattern extends string,
-  TParams extends RouteParams | NoParams = ExtractParams<TPattern> extends []
+  TParams extends object = ExtractParams<TPattern> extends []
     ? NoParams
-    : Record<ExtractParams<TPattern>[number], string>,
+    : Prettify<RouteParams<ExtractParams<TPattern>>>,
 > implements IRoute<TParams>
 {
   readonly pattern: TPattern;
@@ -46,17 +47,13 @@ class Route<
     this.regexp = pathToRegexp(this.pattern, this._keys);
   }
 
-  public compose(...args: RouteComposeArgs<TParams>): string {
-    const [segments, options] = args;
-    let url: string = this.pattern;
-
-    if (segments?.params && !Array.isArray(segments?.params)) {
-      url = this._resolvePath(segments?.params);
-    }
-    url = Route.resolveQuery(url, segments?.query, options?.qs);
-    url = Route.resolveFragment(url, segments?.fragment);
-    url = Route.resolveBase(url, segments?.base);
-
+  public compose(segments?: ComposeSegments<TParams>): string {
+    const { params, query, fragment, base, options } = segments || {};
+    let url = '';
+    url = this._resolvePath(params as TParams);
+    url = Route.resolveQuery(url, query, options?.qs);
+    url = Route.resolveFragment(url, fragment);
+    url = Route.resolveBase(url, base);
     return url;
   }
 
