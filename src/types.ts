@@ -1,10 +1,13 @@
+import {
+  ParseOptions,
+  RegexpToFunctionOptions,
+  TokensToFunctionOptions,
+  TokensToRegexpOptions,
+} from 'path-to-regexp';
 import { IStringifyOptions } from 'qs';
 
-export type Prettify<T> = {
-  [K in keyof T]: T[K];
-} & {};
+export type RouteParam = string | number | boolean | null | undefined;
 
-export type NoParams = [never];
 export type RouteQuery = {
   [key: string]:
     | undefined
@@ -20,46 +23,90 @@ export type RouteQuery = {
 
 export interface RouteOptions {
   qs?: IStringifyOptions;
+  compile?: ParseOptions & TokensToFunctionOptions;
 }
 
-export type ComposeSegments<TParams extends object | NoParams> =
-  TParams extends NoParams
-    ? {
-        params?: TParams;
+export type MatchOptions = ParseOptions &
+  TokensToRegexpOptions &
+  RegexpToFunctionOptions;
+
+export interface DefaultOptions extends RouteOptions {
+  match?: MatchOptions;
+}
+
+type RequireAtLeastOne<
+  TObject,
+  Keys extends keyof TObject = keyof TObject,
+> = Pick<TObject, Exclude<keyof TObject, Keys>> &
+  {
+    [TKey in Keys]-?: Required<Pick<TObject, TKey>> &
+      Partial<Pick<TObject, Exclude<Keys, TKey>>>;
+  }[Keys];
+
+export type ExtractParams<TPattern extends string> =
+  TPattern extends `${infer Head}/${infer Tail}`
+    ? Head extends `:${infer Parameter}`
+      ? Parameter extends `${infer OptionalPrameter}?`
+        ? { [TKey in OptionalPrameter]?: RouteParam } & ExtractParams<Tail>
+        : Parameter extends `${infer OptionalSegment}*`
+        ? {
+            [TKey in OptionalSegment]?: RouteParam | RouteParam[];
+          } & ExtractParams<Tail>
+        : Parameter extends `${infer Segment}+`
+        ? {
+            [TKey in Segment]: RouteParam | RouteParam[];
+          } & ExtractParams<Tail>
+        : { [TKey in Parameter]: RouteParam } & ExtractParams<Tail>
+      : ExtractParams<Tail>
+    : TPattern extends `:${infer LastParameter}`
+    ? LastParameter extends `${infer OptionalPrameter}?`
+      ? { [TKey in OptionalPrameter]?: RouteParam }
+      : LastParameter extends `${infer OptionalSegment}*`
+      ? { [TKey in OptionalSegment]?: RouteParam | RouteParam[] }
+      : LastParameter extends `${infer Segment}+`
+      ? { [TKey in Segment]: RouteParam | RouteParam[] }
+      : { [TKey in LastParameter]: RouteParam }
+    : {};
+
+export type CompileArguments<TParams extends object> = TParams extends Record<
+  string,
+  never
+>
+  ? [
+      segments?: {
         query?: RouteQuery;
         fragment?: string;
         base?: string;
-        options?: RouteOptions;
-      }
-    : {
+      },
+      options?: RouteOptions,
+    ]
+  : TParams extends RequireAtLeastOne<TParams>
+  ? [
+      segments: {
         params: TParams;
         query?: RouteQuery;
         fragment?: string;
         base?: string;
-        options?: RouteOptions;
-      };
+      },
+      options?: RouteOptions,
+    ]
+  : [
+      segments?: {
+        params?: TParams;
+        query?: RouteQuery;
+        fragment?: string;
+        base?: string;
+      },
+      options?: RouteOptions,
+    ];
 
-export interface IRoute<TParams extends object | NoParams> {
-  compose(segments: ComposeSegments<TParams>): string;
-  match(path: string): TParams | false;
-}
+export type MatchParams<
+  TParams extends object,
+  TKeys extends keyof TParams = keyof TParams,
+> = {
+  [TKey in TKeys]: string;
+};
 
-export type ExtractParams<Pattern extends string> =
-  Pattern extends `${infer Head}/${infer Tail}`
-    ? Head extends `:${infer Param}`
-      ? [Param, ...ExtractParams<Tail>]
-      : ExtractParams<Tail>
-    : Pattern extends `:${infer LastParam}`
-    ? [LastParam]
-    : [];
-
-export type RouteParams<TParams extends unknown[]> = TParams extends [
-  infer Param,
-  ...infer RestParams,
-]
-  ? Param extends `${infer OptionalParam}?`
-    ? { [key in OptionalParam]?: string | number } & RouteParams<RestParams>
-    : Param extends string
-    ? { [key in Param]: string | number } & RouteParams<RestParams>
-    : never
-  : {};
+export type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {};
