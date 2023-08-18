@@ -1,11 +1,12 @@
 {
   "name": "easy-urls",
   "description": "Easy and typesafe URL handling",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "author": "Kacper Dziub",
+  "type": "module",
   "main": "./lib/index.js",
-  "modules": "./lib/index.js",
+  "module": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "files": [
     "lib/"
