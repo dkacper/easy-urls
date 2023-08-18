@@ -97,18 +97,3 @@ class Route<
 }
 
 export default Route;
-
-const routes = {
-  index: new Route('/'),
-  product: new Route('/products/:id'),
-  categories: new Route('/category/:segments*/:id?'),
-};
-
-routes.product.compile({ params: { id: 123 } });
-
-const x = routes.categories.match('/');
-
-if (x) {
-  x.segments;
-  x.id;
-}
