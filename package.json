@@ -1,7 +1,7 @@
 {
   "name": "easy-urls",
   "description": "Easy and typesafe URL handling",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "license": "MIT",
   "author": "Kacper Dziub",
   "main": "./lib/index.js",
