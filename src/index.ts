@@ -63,6 +63,12 @@ class Route<
     return matched ? matched.params : false;
   }
 
+  public isSame(
+    route: Route<string, object>,
+  ): route is Route<TPattern, TParams> {
+    return this.pattern === route.pattern;
+  }
+
   public static resolveBase(url: string, base?: string): string {
     if (!base) {
       return url;

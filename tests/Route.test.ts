@@ -197,3 +197,20 @@ test('should add querysting when optional last param', () => {
   });
   expect(match).toBe('/example/path/321?q=search_value');
 });
+
+test('should compare the same routes', () => {
+  const pattern = '/example/path/:id?';
+  const route1 = new Route(pattern);
+  const route2 = new Route(pattern);
+
+  expect(route1.isSame(route2)).toBe(true);
+});
+
+test('should distinguish different routes', () => {
+  const pattern1 = '/first/path/:id';
+  const pattern2 = '/second/path/:slug';
+  const route1 = new Route(pattern1);
+  const route2 = new Route(pattern2);
+
+  expect(route1.isSame(route2)).toBe(false);
+});
